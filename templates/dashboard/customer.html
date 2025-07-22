@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %} Customer Dashboard | Help Desk  {% endblock title %}
+
+{% block content %}
+
+<div class="container mx-auto p-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center">
+                <img src="https://via.placeholder.com/50" alt="Logo" class="mr-2">
+                <h1 class="text-2xl font-bold text-blue-800">MyHelpDesk</h1>
+            </div>
+            <div>
+
+                <a href="#" class="text-blue-500 hover:underline">Sign In</a>
+                <span class="text-gray-500">|</span>
+                <a href="{% url 'logout-view' %}" class="text-red-400 hover:underline">logout</a>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="bg-blue-50 p-4 rounded mb-6">
+            <ul class="flex space-x-4 text-blue-600">
+                <li><a href="#" class="hover:underline">Support Center Home</a></li>
+                <li><a href="#" class="hover:underline">Knowledgebase</a></li>
+                <li><a href="#" class="hover:underline">Open a New Ticket</a></li>
+                <li><a href="#" class="hover:underline">Check Ticket Status</a></li>
+            </ul>
+        </nav>
+
+        <!-- Notice Section -->
+        <div class="bg-white p-6 rounded shadow-md mb-6 text-center">
+            <h2 class="text-2xl font-bold text-blue-800 mb-4">NOTICE TO PATRONS!</h2>
+            <p class="text-gray-600 mb-4">
+                In order to streamline a better support request and better service, we request you to utilize the ticket system which might take
+                48 hours to be responded in working days. Every support request is assigned a unique ticket number which you can use to track
+                the progress and responses online. A valid email address is required to submit a ticket and track it.
+            </p>
+            <p class="text-gray-600">
+                Please contact <a href="mailto:support@myhelpdesk.info" class="text-blue-500 hover:underline">support@myhelpdesk.info</a> or you can reach us by 01-401-1645/45 for further inquiry regarding the issues.
+            </p>
+        </div>
+
+        <!-- Ticket Actions -->
+        <div class="flex space-x-4 mb-6">
+            <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Open a New Ticket</button>
+            <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Check Ticket Status</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-6">
+            <div class="flex">
+                <input type="text" placeholder="Search our Knowledge base" class="border p-2 rounded-l w-full">
+                <button class="bg-blue-700 text-white px-4 py-2 rounded-r">Search</button>
+            </div>
+        </div>
+
+        <!-- Featured Questions -->
+        <div class="bg-white p-4 rounded shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Featured Questions</h3>
+            <ul class="text-blue-500 space-y-1">
+                <li><a href="#" class="hover:underline">What methods of payment are accepted online?</a></li>
+                <li><a href="#" class="hover:underline">How do I do Group Reservations/Hall Reservation?</a></li>
+            </ul>
+        </div>
+    </div>
+
+{% endblock content %}
+
+
+
+
+

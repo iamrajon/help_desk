@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+
+# Django
+*.pyc
+db.sqlite3
+/static/
+media/
+
+# Environments
+.env
+venv/
+env/
+
+hdk-venv/
+
+# Migrations (optional, if you want clean clone)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# VSCode
+.vscode/
