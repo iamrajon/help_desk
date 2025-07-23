@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<div class="container mx-auto p-4">
+<div class=" mx-auto p-4 px-20">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center">
@@ -44,7 +44,9 @@
 
         <!-- Ticket Actions -->
         <div class="flex space-x-4 mb-6">
-            <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Open a New Ticket</button>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                <a href="{% url 'create-ticket' %}">Opne a new ticket</a>
+            </button>
             <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Check Ticket Status</button>
         </div>
 

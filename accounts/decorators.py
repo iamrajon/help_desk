@@ -36,7 +36,7 @@ def agent_required(view_func):
         if request.user.is_agent:
             return view_func(request, *args, **kwargs)
         messages.error(request, 'Access denied. Agent access required.')
-        return redirect('login')
+        return redirect('login-view')
     return _wrapped_view
 
 
@@ -48,7 +48,7 @@ def superuser_required(view_func):
         if request.user.is_superuser_type:
             return view_func(request, *args, **kwargs)
         messages.error(request, 'Access denied. Superuser access required.')
-        return redirect('login')
+        return redirect('login-view')
     return _wrapped_view
 
 
@@ -60,7 +60,7 @@ def staff_required(view_func):
         if request.user.is_agent or request.user.is_superuser_type:
             return view_func(request, *args, **kwargs)
         messages.error(request, 'Access denied. Staff access required.')
-        return redirect('customer_dashboard')
+        return redirect('customer-dashboard')
     return _wrapped_view
 
 
@@ -77,5 +77,5 @@ def verified_agent_required(view_func):
             messages.error(request, 'Please verify your email first.')
         else:
             messages.error(request, 'Access denied.')
-        return redirect('login')
+        return redirect('login-view')
     return _wrapped_view
