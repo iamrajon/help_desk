@@ -16,9 +16,9 @@ def agent_dashboard(request):
     """Agent dashboard - ticket resolution"""
     if not request.user.is_agent:
         messages.error(request, 'Access denied. Agent access required.')
-        return redirect('login')
+        return redirect('login-view')
     
-    return render(request, 'taskbird/agent.html', {'user': request.user})
+    return render(request, 'taskbird/agent_dashboard.html', {'user': request.user})
 
 
 # ticket creation view
@@ -53,3 +53,15 @@ def create_ticket(request):
         context['form'] = form
     
     return render(request, 'taskbird/create_ticket.html', context)
+
+
+@login_required(redirect_field_name='next', login_url='login-view')
+@agent_required
+def agent_ticket_list(request):
+    if not request.user.is_authenticated and not request.user.is_agent:
+        messages.error(request, 'Access denied. Agent Access required.')
+        return redirect('login-view')
+    
+    context = {}
+    return render(request, 'taskbird/agent_ticketlist.html', context)
+

@@ -23,3 +23,5 @@ hdk-venv/
 
 # VSCode
 .vscode/
+
+hdk-schema.dot

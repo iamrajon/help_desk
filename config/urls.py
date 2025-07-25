@@ -3,12 +3,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.views import verify_email
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('dash/', include('dashboard.urls')),
     path('taskbird/', include('taskbird.urls')),
+    path('', RedirectView.as_view(url='/dash/customer/dashboard/', permanent=False)),
 
 
     path('verify-email/<str:token>/', verify_email, name='verify-email'),
