@@ -21,6 +21,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -30,11 +31,17 @@ INSTALLED_APPS = [
     'accounts',
     'dashboard',
     'taskbird',
+
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_extensions',
+
     'corsheaders',
+
     'tailwind',
-    'theme'
+    'theme',
+
+    'channels',
 ]
 
 if DEBUG:
@@ -73,7 +80,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+# WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = "config.asgi.application"
 
 
 # Database
