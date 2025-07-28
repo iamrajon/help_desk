@@ -56,4 +56,4 @@ def get_user_dashboard_url(user):
         return 'agent-dashboard'
     elif user.is_superuser_type:
         return 'admin_dashboard'
-    return 'login'
+    return 'login-view'

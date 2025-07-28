@@ -192,6 +192,7 @@ CORS_ALLOWED_ORIGINS = [
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 # Logging configuration
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -210,8 +211,8 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            # 'handlers': ['console', 'file'],
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
+            # 'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
@@ -227,5 +228,15 @@ LOGGING = {
             'style': '%',
         },
     }
+}
+
+
+# Messaging Framework
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.SUCCESS: 'success',
+    messages.ERROR: 'error',
+    messages.WARNING: 'warning',
+    messages.INFO: 'info',  # Optional, for future use
 }
 

@@ -5,6 +5,7 @@ from accounts.decorators import agent_required
 from taskbird.models import Ticket, TicketAttachment, Status
 from taskbird.forms import TicketForm
 from config.logger import get_logger
+from django.db.models import Q
 
 
 logger = get_logger(__name__)
@@ -45,9 +46,12 @@ def create_ticket(request):
             #     )
             
             messages.success(request, f"Ticket {ticket.ticket_id} created successfully!")
+            if request.user.is_agent:
+                return redirect('agent-ticket-list')
             return redirect('customer-dashboard')  # Adjust to your ticket list view
         else:
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, "Invalid credentials for Ticket!")
+            return redirect("customer-dashboard")
     else:
         form = TicketForm()
         context['form'] = form
@@ -62,6 +66,10 @@ def agent_ticket_list(request):
         messages.error(request, 'Access denied. Agent Access required.')
         return redirect('login-view')
     
+    filters = Q()
     context = {}
+
+    tickets = Ticket.objects.filter(filters).order_by('-created_at')
+    context['tickets'] = tickets
     return render(request, 'taskbird/agent_ticketlist.html', context)
 

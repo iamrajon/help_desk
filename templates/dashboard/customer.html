@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %} Customer Dashboard | Help Desk  {% endblock title %}
 
@@ -8,8 +9,10 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center">
-                <img src="https://via.placeholder.com/50" alt="Logo" class="mr-2">
-                <h1 class="text-2xl font-bold text-blue-800">MyHelpDesk</h1>
+                <img src="{% static 'images/help_desk_logo.jpg' %}" alt="Logo" class="mr-2" style="width: 45px; height: auto;">
+                <h1 class="text-2xl font-bold text-blue-800">
+                    <a href="{% url 'customer-dashboard' %}">Help Desk</a>
+                </h1>
             </div>
             <div>
 
@@ -29,25 +32,43 @@
             </ul>
         </nav>
 
-        <!-- Notice Section -->
-        <div class="bg-white p-6 rounded shadow-md mb-6 text-center">
-            <h2 class="text-2xl font-bold text-blue-800 mb-4">NOTICE TO PATRONS!</h2>
-            <p class="text-gray-600 mb-4">
-                In order to streamline a better support request and better service, we request you to utilize the ticket system which might take
-                48 hours to be responded in working days. Every support request is assigned a unique ticket number which you can use to track
-                the progress and responses online. A valid email address is required to submit a ticket and track it.
-            </p>
-            <p class="text-gray-600">
-                Please contact <a href="mailto:support@myhelpdesk.info" class="text-blue-500 hover:underline">support@myhelpdesk.info</a> or you can reach us by 01-401-1645/45 for further inquiry regarding the issues.
-            </p>
-        </div>
+        {% block customer_portal_dynamic %}
+            <!-- Notice Section -->
+            <div class="bg-white p-6 rounded shadow-md mb-6 text-center">
+                <h2 class="text-2xl font-bold text-blue-800 mb-4">NOTICE TO PATRONS!</h2>
+                <p class="text-gray-600 mb-4">
+                    In order to streamline a better support request and better service, we request you to utilize the ticket system which might take
+                    48 hours to be responded in working days. Every support request is assigned a unique ticket number which you can use to track
+                    the progress and responses online. A valid email address is required to submit a ticket and track it.
+                </p>
+                <p class="text-gray-600">
+                    Please contact <a href="mailto:support@myhelpdesk.info" class="text-blue-500 hover:underline">support@myhelpdesk.info</a> or you can reach us by 01-401-1645/45 for further inquiry regarding the issues.
+                </p>
+            </div>
+        {% endblock customer_portal_dynamic %}
 
         <!-- Ticket Actions -->
         <div class="flex space-x-4 mb-6">
-            <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                <a href="{% url 'create-ticket' %}">Opne a new ticket</a>
+            <button class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                <a href="{% url 'create-ticket' %}">Ticket Stats</a>
             </button>
             <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Check Ticket Status</button>
+            <label for="my_modal_6" class="btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Open a new Ticket</label>
+        </div>
+
+        <!--modal for opening ticket-form-->
+        <input type="checkbox" id="my_modal_6" class="modal-toggle" />
+        <div class="modal" role="dialog">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold">Create a new Ticket</h3>
+                <div class="p-2">
+                    <h3>daisyui modal</h3>
+                    {% block customer_ticket_form %}{% endblock customer_ticket_form %}
+                </div>
+                <div class="modal-action">
+                <label for="my_modal_6" class="btn">Close!</label>
+                </div>
+            </div>
         </div>
 
         <!-- Search Bar -->

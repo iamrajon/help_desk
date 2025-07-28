@@ -36,30 +36,36 @@ def login_view(request):
             password = form.cleaned_data['password']
             
             user = authenticate(request, username=email, password=password)
+            print(f"user: {user}")
             if user:
                 # Check if agent needs email verification
-                if (user.is_agent or user.is_superuser_type) and not user.is_verified:
-                    messages.error(request, 'Please verify your email first. Check your inbox for verification link.')
-                    return render(request, 'auth/login.html', {'form': form})
+                if (user.is_agent or user.is_superuser_type) and not (user.is_verified and user.is_active):
+                    context['form'] = form
+                    messages.error(request, 'Your Email is not verified!. Check your mail inbox for verification link.')
+                    return render(request, 'accounts/login.html', context)
                 
                 # Check if account is active (for email verification and admin approval)
-                if not user.is_active:
-                    messages.error(request, 'Your account is pending admin approval.')
-                    return render(request, 'auth/login.html', {'form': form})
+                # if not user.is_active:
+                #     messages.error(request, 'Your account is pending admin approval.')
+                #     return render(request, 'accounts/login.html', {'form': form})
                 
                 login(request, user)
-                messages.success(request, f'Welcome back, {user.name}!')
+                # messages.success(request, f'Welcome back, {user.name}!')
                 return redirect(get_user_dashboard_url(user))
             else:
+                context['form'] = form
                 messages.error(request, 'Invalid email or password.')
+                return render(request, 'accounts/login.html', context)
+        else:
+            context['form'] = form
+            return render(request, 'accounts/login.html', context)
     else:
         form = LoginForm()
         context['form'] = form
     
     return render(request, 'accounts/login.html', context)
 
-# signup 
-
+# signup view
 def is_valid_email(email):
     try:
         validate_email(email)
@@ -80,36 +86,31 @@ def signup(request):
         elif not is_valid_email(email):
             email_error = "Invalid Email Format"
 
-        # Validate email here (see next section)
         if email_error:
-            return render(request, "accounts/signup.html", {
-                'email': email,
-                'is_agent': is_agent,
-                'email_error': email_error,
-            })
-
-        logger.info(f"{email=}")
-        logger.info(f"{is_agent=}")
-
-        # store data in session
-        request.session['email'] = email
-        request.session['is_agent'] = is_agent
-        request.session['email_verification_done'] = True
-
-        return redirect('agent-signup-view' if is_agent else 'customer-signup-view')
-        
-    request.session['is_agent'] = False
-    is_agent = request.session.get('is_agent', False)
-    context['is_agent'] = is_agent
-    return render(request, "accounts/signup.html", context)
+            messages.error(request, f"error: {email_error}")
+            return redirect('signup-view')
+        else:
+            # store data in session
+            request.session['email'] = email
+            request.session['is_agent'] = is_agent
+            request.session['email_verification_done'] = True
+            return redirect('agent-signup-view' if is_agent else 'customer-signup-view')
+    else:    
+        request.session['is_agent'] = False
+        is_agent = request.session.get('is_agent', False)
+        context['is_agent'] = is_agent
+        return render(request, "accounts/signup.html", context)
 
 @emailverification_required
 def customer_signup(request):
     """Customer registration - simple process"""
     context = {}
+    email = request.session.get('email')
     if request.method == 'POST':
-        form = CustomerSignupForm(request.POST)
+        print(f"request method: {request.method}")
+        form = CustomerSignupForm(request.POST, email=email)
         if form.is_valid():
+            print(f"form is valid: {form.is_valid()}")
             user = form.save(commit=False)
             user.user_type = User.UserType.CUSTOMER
             user.is_verified = True  # Customers don't need email verification
@@ -118,8 +119,12 @@ def customer_signup(request):
             login(request, user)
             messages.success(request, 'Welcome! Your account has been created successfully.')
             return redirect('customer-dashboard')
+        else:
+            context['form'] = form
+            context['step'] = 2
+            return render(request, 'accounts/customer_signup.html', context)
     else:
-        email = request.session.get('email')
+        # logger.info(f"request method: {request.method}")
         form = CustomerSignupForm(email=email)
         context['form'] = form
         context['step'] = 2
@@ -144,6 +149,10 @@ def agent_signup(request):
             messages.success(request, 
                 'Registration submitted successfully! Please check your email for verification link and wait for admin approval.')
             return redirect('login-view')
+        else:
+            context['form'] = form
+            context['step'] = 2
+            return render(request, 'accounts/agent_signup.html', context)
     else:
         email = request.session.get('email')
         form = AgentSignupForm(email=email)
@@ -154,7 +163,7 @@ def agent_signup(request):
     return render(request, 'accounts/agent_signup.html', context)
 
 
-@login_required
+@login_required(login_url="login-view")
 def logout_view(request):
     """Logout user and redirect to login"""
     logout(request)
@@ -182,12 +191,11 @@ def verify_email(request, token):
         user.verification_token = ''
         user.save()
         
-        if user.is_active:
+        if user.is_active and user.is_verified:
             messages.success(request, 'Email verified successfully! You can now login as agent.')
-        else:
-            messages.success(request, 'Email verified successfully! Please wait for admin approval.')
     except User.DoesNotExist:
         messages.error(request, 'Invalid or expired verification link.')
+        return redirect("login-view")
     
     return redirect('login-view')
 

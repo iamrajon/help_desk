@@ -22,6 +22,7 @@ django-extensions==4.1
 django-tailwind==4.2.0
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
+Faker==37.4.2
 hyperlink==21.0.0
 idna==3.10
 incremental==24.7.2

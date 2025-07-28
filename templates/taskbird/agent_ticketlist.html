@@ -73,95 +73,55 @@
 
             <!-- Ticket Content -->
             <div id="ticket-content">
-                <!-- Card View -->
+                <!-- Card View of tickets -->
                 <div id="card-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Sample Ticket 1 -->
+                    {% for ticket in tickets %}
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden h-64 flex flex-col transition hover:shadow-xl hover:-translate-y-1">
                         <div class="bg-gray-800 text-white px-4 py-3 flex justify-between items-center">
-                            <span class="text-sm font-semibold">TKT1001</span>
-                            <span class="text-xs">Jul 25, 2025</span>
+                            <span class="text-sm font-semibold">{{ ticket.ticket_id }}</span>
+                            <span class="text-xs">{{ ticket.created_at|date:"M d, Y" }}</span>
                         </div>
                         <div class="p-6 flex-1">
-                            <h3 class="text-base font-semibold text-gray-800 truncate">Login Issue</h3>
-                            <p class="text-sm text-gray-600 mt-2 line-clamp-2">User reports inability to log in due to incorrect password error.</p>
+                            <h3 class="text-base font-semibold text-gray-800 truncate">{{ ticket.title }}</h3>
+                            <p class="text-sm text-gray-600 mt-2 line-clamp-2">{{ ticket.description }}</p>
                             <div class="mt-4 space-y-2 text-sm">
                                 <div class="flex justify-between items-center">
                                     <span class="text-gray-500 font-medium">Customer:</span>
-                                    <span class="font-medium text-gray-700">john_doe</span>
+                                    <span class="font-medium text-gray-700">{{ ticket.customer.username }}</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-gray-500 font-medium">Priority:</span>
-                                    <span class="font-medium text-red-600">High</span>
+                                    <span class="font-medium 
+                                        {% if ticket.priority.name == 'High' or ticket.priority.name == 'Urgent' %}text-red-600
+                                        {% elif ticket.priority.name == 'Medium' %}text-yellow-600
+                                        {% else %}text-green-600{% endif %}">
+                                        {{ ticket.priority.name|default:"N/A" }}
+                                    </span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-gray-500 font-medium">Status:</span>
-                                    <span class="font-medium text-blue-600">Open</span>
+                                    <span class="font-medium 
+                                        {% if ticket.status.name == 'Open' %}text-blue-600
+                                        {% elif ticket.status.name == 'In Progress' %}text-purple-600
+                                        {% elif ticket.status.name == 'Closed' %}text-gray-600
+                                        {% else %}text-gray-600{% endif %}">
+                                        {{ ticket.status.name|default:"N/A" }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         <div class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-200">
-                            <a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-semibold">View Details</a>
-                            <span class="text-green-600 text-sm font-medium">Active</span>
+                            <a href="" class="text-blue-500 hover:text-blue-600 text-sm font-semibold">View Details</a>
+                            <span class="text-sm font-medium {% if ticket.is_active %}text-green-600{% else %}text-red-600{% endif %}">
+                                {{ ticket.is_active|yesno:"Active,Inactive" }}
+                            </span>
                         </div>
                     </div>
-                    <!-- Sample Ticket 2 -->
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden h-64 flex flex-col transition hover:shadow-xl hover:-translate-y-1">
-                        <div class="bg-gray-800 text-white px-4 py-3 flex justify-between items-center">
-                            <span class="text-sm font-semibold">TKT1002</span>
-                            <span class="text-xs">Jul 24, 2025</span>
-                        </div>
-                        <div class="p-6 flex-1">
-                            <h3 class="text-base font-semibold text-gray-800 truncate">Billing Dispute</h3>
-                            <p class="text-sm text-gray-600 mt-2 line-clamp-2">Customer charged twice for the same subscription.</p>
-                            <div class="mt-4 space-y-2 text-sm">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-medium">Customer:</span>
-                                    <span class="font-medium text-gray-700">alice_w</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-medium">Priority:</span>
-                                    <span class="font-medium text-yellow-600">Medium</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-medium">Status:</span>
-                                    <span class="font-medium text-purple-600">In Progress</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-200">
-                            <a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-semibold">View Details</a>
-                            <span class="text-green-600 text-sm font-medium">Active</span>
-                        </div>
+                    {% empty %}
+                    <div class="bg-white rounded-xl shadow-lg p-6 text-center col-span-full">
+                        <p class="text-sm text-gray-600">No tickets found.</p>
                     </div>
-                    <!-- Sample Ticket 3 -->
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden h-64 flex flex-col transition hover:shadow-xl hover:-translate-y-1">
-                        <div class="bg-gray-800 text-white px-4 py-3 flex justify-between items-center">
-                            <span class="text-sm font-semibold">TKT1003</span>
-                            <span class="text-xs">Jul 23, 2025</span>
-                        </div>
-                        <div class="p-6 flex-1">
-                            <h3 class="text-base font-semibold text-gray-800 truncate">Feature Request</h3>
-                            <p class="text-sm text-gray-600 mt-2 line-clamp-2">Request for new dashboard customization options.</p>
-                            <div class="mt-4 space-y-2 text-sm">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-medium">Customer:</span>
-                                    <span class="font-medium text-gray-700">bob_m</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-medium">Priority:</span>
-                                    <span class="font-medium text-green-600">Low</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-500 font-medium">Status:</span>
-                                    <span class="font-medium text-gray-600">Closed</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-200">
-                            <a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-semibold">View Details</a>
-                            <span class="text-red-600 text-sm font-medium">Inactive</span>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
 
                 <!-- Table View -->
@@ -179,36 +139,39 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
+                            {% for ticket in tickets %}
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900">TKT1001</td>
-                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">Login Issue</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">john_doe</td>
-                                <td class="px-4 py-3 text-sm text-red-600">High</td>
-                                <td class="px-4 py-3 text-sm text-blue-600">Open</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">Jul 25, 2025</td>
-                                <td class="px-4 py-3"><a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-medium">View</a></td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ ticket.ticket_id }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">{{ ticket.title }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ ticket.customer.username }}</td>
+                                <td class="px-4 py-3 text-sm 
+                                    {% if ticket.priority.name == 'High' or ticket.priority.name == 'Urgent' %}text-red-600
+                                    {% elif ticket.priority.name == 'Medium' %}text-yellow-600
+                                    {% else %}text-green-600{% endif %}">
+                                    {{ ticket.priority.name|default:"N/A" }}
+                                </td>
+                                <td class="px-4 py-3 text-sm 
+                                    {% if ticket.status.name == 'Open' %}text-blue-600
+                                    {% elif ticket.status.name == 'In Progress' %}text-purple-600
+                                    {% elif ticket.status.name == 'Closed' %}text-gray-600
+                                    {% else %}text-gray-600{% endif %}">
+                                    {{ ticket.status.name|default:"N/A" }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ ticket.created_at|date:"M d, Y" }}</td>
+                                <td class="px-4 py-3">
+                                    <a href="" class="text-blue-500 hover:text-blue-600 text-sm font-medium">View</a>
+                                </td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900">TKT1002</td>
-                                <td class="px-4 py-3 text-sm text-gray-900 truncate max-w-xs">Billing Dispute</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">alice_w</td>
-                                <td class="px-4 py-3 text-sm text-yellow-600">Medium</td>
-                                <td class="px-4 py-3 text-sm text-purple-600">In Progress</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">Jul 24, 2025</td>
-                                <td class="px-4 py-3"><a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-medium">View</a></td>
+                                <td colspan="7" class="px-4 py-3 text-sm text-gray-900 text-center">No tickets found.</td>
                             </tr>
-                            <tr>
-                                <td class="px-4 py-3 text-sm text-gray-900">TKT1003</td>
-                                <td class="px-4 py-3 textწ
-                                <td class="px-4 py-3 text-sm text-gray-900">bob_m</td>
-                                <td class="px-4 py-3 text-sm text-green-600">Low</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">Closed</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">Jul 23, 2025</td>
-                                <td class="px-4 py-3"><a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-medium">View</a></td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
+
+                
             </div>
 
             <!-- JavaScript for Toggle and Dropdown -->

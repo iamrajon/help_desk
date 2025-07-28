@@ -1,0 +1,42 @@
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert mb-3 p-3 rounded-md flex items-center justify-between shadow-sm transition-all duration-300
+                    {% if message.tags == 'success' %}
+                        bg-blue-50 border border-blue-300 text-blue-800 hover:bg-blue-100
+                    {% elif message.tags == 'error' %}
+                        bg-red-50 border border-red-300 text-red-800 hover:bg-red-100
+                    {% elif message.tags == 'warning' %}
+                        bg-yellow-50 border border-yellow-300 text-yellow-800 hover:bg-yellow-100
+                    {% else %}
+                        bg-gray-50 border border-gray-300 text-gray-800 hover:bg-gray-100
+                    {% endif %}">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    {% if message.tags == 'success' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0118 0z" />
+                    {% elif message.tags == 'error' %}
+                        <path stroke-linecap="round" stroke-linejoin="2" 
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 0 0118 0z" />
+                    {% elif message.tags == 'warning' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M12 9v2m0 4h.01m-6.45 4.55l5.45-5.45 5.45 5.45m0-10.9l-5.45 5.45-5.45-5.45" />
+                    {% else %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 0 111-18 0 9 9 0 0118 0z" />
+                    {% endif %}
+                </svg>
+                <p class="text-sm font-medium">{{ message }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" 
+                    class="text-gray-500 hover:text-gray-700 transition-colors duration-200" 
+                    aria-label="Close alert">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    {% endfor %}
+</script>
+{% endif %}

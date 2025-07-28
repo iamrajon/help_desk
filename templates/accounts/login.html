@@ -3,25 +3,35 @@
 
 {% block title %} Help Desk | Login Pate {% endblock title %} 
 
+{% comment %} custom style {% endcomment %}
+<style>
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+</style>
+
 {% block content %}
 
     <div class="flex h-full">
         <!-- Left Section -->
         {% include "accounts/includes/left_box.html" %}
 
-
         <!-- Right Section -->
-        <div class="w-1/2 p-6  flex flex-col justify-between">
+        <div class="w-1/2 p-6 flex flex-col justify-between">
+            <!--message section-->
+            {% include "accounts/includes/alert.html" %}
+
+            <!--from section-->
             <div class="flex-grow flex items-center">
-                {% if messages %}
-                    {% for message in messages  %}
-                        <span>{{message}}</span>
-                    {% endfor %}
-                {% endif %}
                 <div class="w-full">
+                    <!-- Login Form -->
                     <h2 class="text-2xl font-bold mb-6 text-center">Login With Your Account</h2>
                     <p class="text-sm text-gray-500 mb-4 text-center"></p>
-                    <form method="post" action="{% url 'login-view' %}" class="space-y-4 mx-auto max-w-md">
+                    <form method="post" action="{% url 'login-view' %}" class="space-y-4 mx-auto max-w-md" novalidate>
                         {% csrf_token %}
                         {% for field in form %}
                             <div>
@@ -51,7 +61,7 @@
                     <img src="https://via.placeholder.com/50" alt="Aprilia" class="h-6">
                 </div>
             </div>
-        </div>
+        </div> 
     </div>
 
 {% endblock content %}

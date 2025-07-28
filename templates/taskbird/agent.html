@@ -16,6 +16,7 @@
             <a href="{% url 'agent-dashboard' %}" class="block py-2 px-4 bg-gray-900">Dashboard</a>
             <a href="{% url 'agent-ticket-list' %}" class="block py-2 px-4 hover:bg-gray-700">Tickets</a>
             <a href="#" class="block py-2 px-4 hover:bg-gray-700">Users</a>
+            <a href="#" class="block py-2 px-4 hover:bg-gray-700">Livechat</a>
             <a href="#" class="block py-2 px-4 hover:bg-gray-700">Reports</a>
             <a href="{% url 'logout-view' %}" class="block py-2 px-4 hover:bg-gray-700">Logout</a>
         </nav>
@@ -26,7 +27,7 @@
         <!-- Fixed Navbar -->
         <header class="fixed top-0 left-64 right-0 bg-white shadow p-4 z-10">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold">Welcome, John Doe</h2>
+                <h2 class="text-xl font-semibold">welcome, {{request.user.username}}</h2>
                 <div class="flex items-center space-x-4">
                     <span class="text-gray-600">July 23, 2025</span>
                     <a href="#" class="text-blue-600 hover:underline">Profile</a>
