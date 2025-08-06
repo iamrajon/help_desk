@@ -1,16 +1,18 @@
 {% extends "base.html" %}
+
 {% load static %}
 
 {% block title %} Agent Dash | Help Desk {% endblock title %}
 
 {% block content %}
+
 <style>
     .sidebar {
-        transition: width 0.3s ease-in-out;
+        transition: width 0.2s ease-in-out;
     }
 
     .sidebar-item-text {
-        transition: opacity 0.3s ease-in-out;
+        transition: opacity 0.2s ease-in-out;
     }
 
     .no-scrollbar::-webkit-scrollbar {
@@ -28,16 +30,17 @@
         background: rgba(255, 255, 255, 0.6);
         border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-        transition: all 0.3s ease-in-out;
+        transition: all 0.2s ease-in-out;
     }
 
     .sidebar-header {
         display: flex;
         align-items: center;
         height: 4rem;
+        marginTop: 1rem;
         padding-left: 1rem;
         padding-right: 1rem;
-        transition: all 0.3s ease-in-out;
+        transition: all 0.2s ease-in-out;
     }
 
     .sidebar.collapsed .sidebar-header {
@@ -47,8 +50,8 @@
     }
 
     #main-content {
-        transition: margin-left 0.3s ease-in-out;
-        margin-left: 16rem;
+        transition: margin-left 0.2s ease-in-out;
+        margin-left: 14rem;
     }
 
     .sidebar.collapsed ~ #main-content {
@@ -56,54 +59,61 @@
     }
 
     #navbar {
-        transition: padding 0.3s ease-in-out;
-        width: 100%;
-        padding-left: 2rem;
-        padding-right: 2rem;
+        transition: all 0.2s ease-in-out;
+        width: calc(100% - 14rem); /* Adjust width based on sidebar */
     }
 
     .sidebar.collapsed ~ #main-content #navbar {
+        width: calc(100% - 4rem); /* Adjust width when sidebar is collapsed */
+    }
+
+    .navbar-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        height: 100%; /* Ensure full height for vertical centering */
         padding-left: 2rem;
         padding-right: 2rem;
     }
 
-    .sidebar:not(.collapsed) ~ #main-content #navbar {
-        padding-left: 2rem;
-        padding-right: 2rem;
+    /* Ensure nav items don't shift up */
+    .sidebar-nav {
+        margin-top: 2rem; /* Consistent margin to prevent shifting */
     }
 </style>
 
 <div class="flex min-h-screen">
     <!-- Sidebar -->
-    <div id="sidebar" class="fixed top-0 left-0 h-screen bg-gray-900 text-white sidebar no-scrollbar" style="width: 16rem;">
-        <div class="sidebar-header bg-gray-500">
-            <button id="toggle-sidebar" class="flex items-center space-x-2 focus:outline-none w-full px-4">
+    <div id="sidebar" class="fixed top-0 left-0 h-screen bg-gray-900 text-white sidebar no-scrollbar" style="width: 14rem;">
+        <div class="sidebar-header">
+            <button id="toggle-sidebar" class="flex items-center space-x-2 focus:outline-none w-full p-4">
                 <i class="fas fa-headset text-2xl"></i>
                 <h1 id="sidebar-title" class="text-2xl font-bold sidebar-item-text">Help Desk</h1>
             </button>
         </div>
-        <nav class="mt-4">
-            <a href="{% url 'agent-dashboard' %}" class="flex items-center py-2 px-4 bg-gray-800 hover:bg-gray-700">
+        <nav class="sidebar-nav">
+            <a href="{% url 'agent-dashboard' %}" class="flex items-center py-2 px-4 mb-2 hover:bg-gray-700">
                 <i class="fas fa-tachometer-alt mr-2"></i>
                 <span class="sidebar-item-text">Dashboard</span>
             </a>
-            <a href="{% url 'agent-ticket-list' %}" class="flex items-center py-2 px-4 hover:bg-gray-700">
+            <a href="{% url 'agent-ticket-list' %}" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
                 <i class="fas fa-ticket-alt mr-2"></i>
                 <span class="sidebar-item-text">Tickets</span>
             </a>
-            <a href="#" class="flex items-center py-2 px-4 hover:bg-gray-700">
+            <a href="#" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
                 <i class="fas fa-users mr-2"></i>
                 <span class="sidebar-item-text">Users</span>
             </a>
-            <a href="#" class="flex items-center py-2 px-4 hover:bg-gray-700">
+            <a href="#" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
                 <i class="fas fa-comment-dots mr-2"></i>
                 <span class="sidebar-item-text">Livechat</span>
             </a>
-            <a href="#" class="flex items-center py-2 px-4 hover:bg-gray-700">
+            <a href="#" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
                 <i class="fas fa-chart-bar mr-2"></i>
                 <span class="sidebar-item-text">Reports</span>
             </a>
-            <a href="{% url 'logout-view' %}" class="flex items-center py-2 px-4 hover:bg-gray-700">
+            <a href="{% url 'logout-view' %}" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
                 <i class="fas fa-sign-out-alt mr-2"></i>
                 <span class="sidebar-item-text">Logout</span>
             </a>
@@ -113,23 +123,26 @@
     <!-- Main Content -->
     <div id="main-content" class="flex-1 transition-all duration-300 ease-in-out">
         <!-- Navbar -->
-        <header id="navbar" class="glass-navbar fixed top-0 w-full z-10 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <h2 class="text-xl font-semibold">Welcome, {{ request.user.username }}</h2>
-            </div>
-            <div class="flex items-center space-x-4" id="end-box-nav">
-                <span class="text-gray-700 font-medium">July 28, 2025</span>
-                <a href="#" class="text-blue-600 hover:underline">Profile</a>
+        <header id="navbar" class="glass-navbar fixed top-0 z-10 h-20">
+            <div class="navbar-content">
+                <div class="flex items-center space-x-2">
+                    <h2 class="text-xl font-semibold">Welcome, {{ request.user.username }}</h2>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700 font-medium">July 28, 2025</span>
+                    <a href="#" class="text-blue-600 hover:underline">Profile</a>
+                </div>
             </div>
         </header>
 
         <!-- Scrollable Page Content -->
-        <div class=" bg-gray-100 mt-27">
+        <div class="mt-7">
             {% block dynamic_content %}
             {% endblock dynamic_content %}
         </div>
     </div>
 </div>
+
 {% endblock content %}
 
 {% block script %}
@@ -140,9 +153,6 @@
     const sidebarTitle = document.getElementById('sidebar-title');
     const sidebarItemTexts = document.querySelectorAll('.sidebar-item-text');
 
-    const endboxnav = document.getElementById("end-box-nav");
-    console.log(endboxnav);
-
     let isCollapsed = false;
 
     toggleButton.addEventListener('click', () => {
@@ -152,26 +162,21 @@
         if (isCollapsed) {
             sidebar.style.width = '4rem';
             mainContent.style.marginLeft = '4rem';
-            sidebarTitle.style.opacity = '0';
-            sidebarItemTexts.forEach(text => text.style.opacity = '0');
-            setTimeout(() => {
-                sidebarTitle.style.display = 'none';
-                sidebarItemTexts.forEach(text => text.style.display = 'none');
-            }, 300);
-
-            //how can i set endboxnav to me-10 class of tailwind here
-            endboxnav.style.marginLeft = "200px";
+            // Instantly hide sidebar title and items
+            sidebarTitle.style.display = 'none';
+            sidebarItemTexts.forEach(text => text.style.display = 'none');
         } else {
-            sidebar.style.width = '16rem';
-            mainContent.style.marginLeft = '16rem';
+            sidebar.style.width = '14rem';
+            mainContent.style.marginLeft = '14rem';
+            // Instantly show sidebar title and items
             sidebarTitle.style.display = 'block';
             sidebarItemTexts.forEach(text => text.style.display = 'block');
+            // Ensure opacity is reset immediately
             setTimeout(() => {
                 sidebarTitle.style.opacity = '1';
                 sidebarItemTexts.forEach(text => text.style.opacity = '1');
             }, 10);
-            endboxnav.style.marginLeft = "100px";
         }
-    });
+    }); 
 </script>
 {% endblock script %}
