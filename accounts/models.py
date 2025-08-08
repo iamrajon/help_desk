@@ -89,7 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'Users'
     
     def __str__(self):
-        return f"{self.name} ({self.email})"
+        return f"{self.name}"
     
     def get_full_name(self):
         """Return the user's full name"""

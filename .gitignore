@@ -25,3 +25,4 @@ hdk-venv/
 .vscode/
 
 hdk-schema.dot
+Pipfile
