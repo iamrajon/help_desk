@@ -1,5 +1,5 @@
 
-from django.urls import path
+from django.urls import path, include
 from accounts import views
 
 urlpatterns = [
@@ -14,3 +14,7 @@ urlpatterns = [
     # Dashboard URLs
     # path('dashboard/admin/', views.admin_dashboard, name='admin_dashboard'),
 ]
+
+urlpatterns += {
+    path('api/v1/', include('accounts.api.urls')),
+}
