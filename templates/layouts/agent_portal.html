@@ -46,7 +46,7 @@
     .sidebar.collapsed .sidebar-header {
         justify-content: center;
         padding-left: 0;
-        padding-right: 0;
+        padding-right: 2;
     }
 
     #main-content {
@@ -64,7 +64,7 @@
     }
 
     .sidebar.collapsed ~ #main-content #navbar {
-        width: calc(100% - 4rem); /* Adjust width when sidebar is collapsed */
+        width: calc(100% - 2rem); /* Adjust width when sidebar is collapsed */
     }
 
     .navbar-content {
@@ -85,37 +85,42 @@
 
 <div class="flex min-h-screen">
     <!-- Sidebar -->
-    <div id="sidebar" class="fixed top-0 left-0 h-screen bg-gray-900 text-white sidebar no-scrollbar" style="width: 14rem;">
-        <div class="sidebar-header">
-            <button id="toggle-sidebar" class="flex items-center space-x-2 focus:outline-none w-full p-4">
-                <i class="fas fa-headset text-2xl"></i>
-                <h1 id="sidebar-title" class="text-2xl font-bold sidebar-item-text">Help Desk</h1>
+
+    <div id="sidebar" class="fixed top-0 left-0 h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white w-56 shadow-xl transition-all duration-300 ease-in-out">
+        <div class="sidebar-header p-6 border-b border-gray-700">
+            <button id="toggle-sidebar" class="flex items-center space-x-3 focus:outline-none w-full group">
+                <i class="fas fa-headset text-3xl text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                <h1 id="sidebar-title" class="text-2xl font-semibold tracking-wide text-gray-100 group-hover:text-white">Help Desk</h1>
             </button>
         </div>
-        <nav class="sidebar-nav">
-            <a href="{% url 'agent-dashboard' %}" class="flex items-center py-2 px-4 mb-2 hover:bg-gray-700">
-                <i class="fas fa-tachometer-alt mr-2"></i>
-                <span class="sidebar-item-text">Dashboard</span>
+        <nav class="sidebar-nav p-4">
+            <a href="{% url 'taskbird:agent-dashboard' %}" class="flex items-center py-3 px-4 mb-2 rounded-lg hover:bg-gray-700 hover:bg-opacity-50 transition-all duration-200 group">
+                <i class="fas fa-tachometer-alt mr-3 text-indigo-400 group-hover:text-indigo-300"></i>
+                <span class="sidebar-item-text font-medium text-gray-200 group-hover:text-white">Dashboard</span>
             </a>
-            <a href="{% url 'agent-ticket-list' %}" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
-                <i class="fas fa-ticket-alt mr-2"></i>
-                <span class="sidebar-item-text">Tickets</span>
+            <a href="{% url 'taskbird:agent-customer-sessions' %}" class="flex items-center py-3 px-4 mb-2 rounded-lg hover:bg-gray-700 hover:bg-opacity-50 transition-all duration-200 group">
+                <i class="fas fa-signal mr-3 text-green-400 group-hover:text-green-300"></i>
+                <span class="sidebar-item-text font-medium text-gray-200 group-hover:text-white">Sessions</span>
             </a>
-            <a href="#" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
-                <i class="fas fa-users mr-2"></i>
-                <span class="sidebar-item-text">Users</span>
+            <a href="{% url 'taskbird:agent-ticket-list' %}" class="flex items-center py-3 px-4 mb-2 rounded-lg hover:bg-gray-700 hover:bg-opacity-50 transition-all duration-200 group">
+                <i class="fas fa-ticket-alt mr-3 text-indigo-400 group-hover:text-indigo-300"></i>
+                <span class="sidebar-item-text font-medium text-gray-200 group-hover:text-white">Tickets</span>
             </a>
-            <a href="#" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
-                <i class="fas fa-comment-dots mr-2"></i>
-                <span class="sidebar-item-text">Livechat</span>
+            <a href="#" class="flex items-center py-3 px-4 mb-2 rounded-lg hover:bg-gray-700 hover:bg-opacity-50 transition-all duration-200 group">
+                <i class="fas fa-comment-dots mr-3 text-indigo-400 group-hover:text-indigo-300"></i>
+                <span class="sidebar-item-text font-medium text-gray-200 group-hover:text-white">Livechat</span>
             </a>
-            <a href="#" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
-                <i class="fas fa-chart-bar mr-2"></i>
-                <span class="sidebar-item-text">Reports</span>
+            <a href="#" class="flex items-center py-3 px-4 mb-2 rounded-lg hover:bg-gray-700 hover:bg-opacity-50 transition-all duration-200 group">
+                <i class="fas fa-chart-bar mr-3 text-indigo-400 group-hover:text-indigo-300"></i>
+                <span class="sidebar-item-text font-medium text-gray-200 group-hover:text-white">Reports</span>
             </a>
-            <a href="{% url 'logout-view' %}" class="flex items-center py-2 px-4 mb-4 hover:bg-gray-700">
-                <i class="fas fa-sign-out-alt mr-2"></i>
-                <span class="sidebar-item-text">Logout</span>
+            <a href="#" class="flex items-center py-3 px-4 mb-2 rounded-lg hover:bg-gray-700 hover:bg-opacity-50 transition-all duration-200 group">
+                <i class="fas fa-users mr-3 text-indigo-400 group-hover:text-indigo-300"></i>
+                <span class="sidebar-item-text font-medium text-gray-200 group-hover:text-white">Users</span>
+            </a>
+            <a href="{% url 'logout-view' %}" class="flex items-center py-3 px-4 mb-2 rounded-lg hover:bg-red-600 hover:bg-opacity-50 transition-all duration-200 group">
+                <i class="fas fa-sign-out-alt mr-3 text-red-400 group-hover:text-red-300"></i>
+                <span class="sidebar-item-text font-medium text-gray-200 group-hover:text-white">Logout</span>
             </a>
         </nav>
     </div>
@@ -136,7 +141,7 @@
         </header>
 
         <!-- Scrollable Page Content -->
-        <div class="mt-7">
+        <div class="mt-2">
             {% block dynamic_content %}
             {% endblock dynamic_content %}
         </div>

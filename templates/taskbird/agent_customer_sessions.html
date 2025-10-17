@@ -1,0 +1,439 @@
+{% extends "layouts/agent_portal.html" %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block dynamic_content %}
+
+<style>
+    @keyframes pop {
+        0% { transform: scale(0.9); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+        animation: pop 0.3s ease-out forwards;
+    }
+    @keyframes zoom {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .session-item[data-status="pending"] {
+        animation: zoom 2s infinite ease-in-out;
+    }
+    .session-item {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .session-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .session-item.active {
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%) !important;
+        border-left: 4px solid #6366f1;
+    }
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .session-details {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    .attachment-item:hover {
+        background-color: #f1f5f9;
+    }
+    .session-details-pending {
+        border-left: 4px solid #10b981;
+        background: linear-gradient(to right, #ecfdf5, #ffffff);
+    }
+    .session-details-accepted {
+        border-left: 4px solid #f59e0b;
+        background: linear-gradient(to right, #fffbeb, #ffffff);
+    }
+    .session-details-rejected {
+        border-left: 4px solid #ef4444;
+        background: linear-gradient(to right, #fef2f2, #ffffff);
+    }
+    .status-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .status-icon-pending {
+        background-color: #10b981;
+        color: white;
+    }
+    .status-icon-accepted {
+        background-color: #f59e0b;
+        color: white;
+    }
+    .status-icon-rejected {
+        background-color: #ef4444;
+        color: white;
+    }
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #10b981;
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 400px;
+        line-height: 1.5;
+    }
+    .notification-error {
+        background-color: #ef4444;
+    }
+    @keyframes slideIn {
+        0% { transform: translateX(100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+</style>
+
+{% csrf_token %}
+
+<!-- Active Sessions and Session Details -->
+<div class="mt-18 p-4 flex flex-col lg:flex-row gap-4">
+    <!-- Session List -->
+    <div class="w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-4 overflow-y-auto h-screen animate-pop">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Session List</h3>
+        <div class="space-y-2">
+            {% for session in sessions %}
+                <div 
+                    class="session-item flex items-center p-3 rounded-lg cursor-pointer transition-colors duration-200"
+                    data-session="{{ session.session_id }}"
+                    data-status="{{ session.session_status|lower }}"
+                    data-type="{{ session.channel|lower }}"
+                    style="
+                        {% if session.session_status == 'PENDING' %}
+                            background: linear-gradient(135deg, #e6ffe6 0%, #c1f0c1 100%);
+                        {% elif session.session_status == 'ACCEPTED' %}
+                            background: linear-gradient(135deg, #fff9e6 0%, #fff0b3 100%);
+                        {% elif session.session_status == 'REJECTED' %}
+                            background: linear-gradient(135deg, #f0f0f0 0%, #d9d9d9 100%);
+                        {% else %}
+                            background: linear-gradient(135deg, #f8f8f8 0%, #e0e0e0 100%);
+                        {% endif %}
+                    "
+                >
+                    <!-- Channel Icon -->
+                    {% if session.channel == 'CHAT' %}
+                        <i class="fas fa-comments text-blue-500 mr-2"></i>
+                    {% elif session.channel == 'FORM' %}
+                        <i class="fas fa-file-alt text-purple-500 mr-2"></i>
+                    {% else %}
+                        <i class="fas fa-cog text-orange-500 mr-2"></i>
+                    {% endif %}
+
+                    <!-- Status Icon -->
+                    {% if session.session_status == 'PENDING' %}
+                        <i class="fas fa-clock text-green-500 mr-2"></i>
+                    {% elif session.session_status == 'ACCEPTED' %}
+                        <i class="fas fa-check-circle text-yellow-500 mr-2"></i>
+                    {% elif session.session_status == 'REJECTED' %}
+                        <i class="fas fa-times-circle text-gray-500 mr-2"></i>
+                    {% endif %}
+
+                    <!-- Session Info -->
+                    <span class="text-gray-800">
+                        {{ session.title|truncatechars:15 }}<br>
+                        <small class="text-xs text-gray-600">
+                            {{ session.customer.username }}
+                            {% if session.priority %}
+                                • <span class="font-medium text-gray-700">{{ session.priority.name }}</span>
+                            {% endif %}
+                        </small>
+                    </span>
+
+                    <!-- Created Time -->
+                    <span class="ml-auto text-xs text-gray-600">
+                        {{ session.created_at|date:"M d, Y h:i A" }}
+                    </span>
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-sm text-center py-4">No sessions available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Session Details -->
+    <div class="w-full lg:w-3/4 bg-white rounded-xl shadow-lg p-6 min-h-screen session-details" id="session-details">
+        <div class="text-center">
+            <div class="w-36 h-36 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-slow">
+                <i class="fas fa-chart-line text-white text-5xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800">View Sessions</h3>
+            <p class="text-gray-600 mt-2">Click a session to view details.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+    // Define base URL paths
+    const sessionDetailBaseUrl = "/taskbird/agent-customer/sessions/";
+    const acceptSessionBaseUrl = "/taskbird/agent-customer/sessions/";
+    const rejectSessionBaseUrl = "/taskbird/agent-customer/sessions/";
+
+    // Function to show notification
+    function showNotification(message, isError = false) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${isError ? 'notification-error' : ''}`;
+        notification.innerHTML = message;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Function to render session details
+    function renderSessionDetails(data, detailSection) {
+        const isPending = data.status.toLowerCase().includes('pending');
+        detailSection.innerHTML = `
+            <div class="session-details w-full p-6 rounded-lg ${
+                isPending ? 'session-details-pending' : 
+                data.status.toLowerCase().includes('accepted') ? 'session-details-accepted' : 'session-details-rejected'
+            }">
+                <div class="flex items-center mb-6">
+                    <div class="status-icon ${
+                        isPending ? 'status-icon-pending' : 
+                        data.status.toLowerCase().includes('accepted') ? 'status-icon-accepted' : 'status-icon-rejected'
+                    }">
+                        <i class="fas ${
+                            isPending ? 'fa-clock' : 
+                            data.status.toLowerCase().includes('accepted') ? 'fa-check-circle' : 'fa-times-circle'
+                        }"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 ml-4">Session #${data.session_id}</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <p class="text-sm text-gray-700"><strong class="font-semibold">Type:</strong> ${data.channel}</p>
+                        <p class="text-sm text-gray-700"><strong class="font-semibold">Status:</strong> 
+                            <span class="${
+                                isPending ? 'text-green-600' : 
+                                data.status.toLowerCase().includes('accepted') ? 'text-yellow-600' : 'text-red-600'
+                            }">
+                                ${data.status}
+                            </span>
+                        </p>
+                        <p class="text-sm text-gray-700"><strong class="font-semibold">Priority:</strong> ${data.priority}</p>
+                        <p class="text-sm text-gray-700"><strong class="font-semibold">Category:</strong> ${data.category}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <p class="text-sm text-gray-700"><strong class="font-semibold">Customer:</strong> ${data.customer}</p>
+                        <p class="text-sm text-gray-700"><strong class="font-semibold">Created:</strong> ${data.created_at}</p>
+                        ${
+                            !isPending && data.reviewed_by !== 'None' ? 
+                            `<p class="text-sm text-gray-700"><strong class="font-semibold">Reviewed By:</strong> ${data.reviewed_by}</p>` : 
+                            ''
+                        }
+                        ${
+                            !isPending && data.reviewed_at !== 'Not reviewed' ? 
+                            `<p class="text-sm text-gray-700"><strong class="font-semibold">Reviewed At:</strong> ${data.reviewed_at}</p>` : 
+                            ''
+                        }
+                    </div>
+                </div>
+                <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <p class="text-sm text-gray-700"><strong class="font-semibold">Title:</strong> ${data.title}</p>
+                    <p class="text-sm text-gray-700 mt-2"><strong class="font-semibold">Description:</strong> ${data.description}</p>
+                    ${
+                        !isPending && data.rejection_reason !== 'None' ? 
+                        `<p class="text-sm text-gray-700 mt-2"><strong class="font-semibold">Rejection Reason:</strong> ${data.rejection_reason}</p>` : 
+                        ''
+                    }
+                    <p class="text-sm text-gray-700 mt-2"><strong class="font-semibold">Created Ticket:</strong> ${
+                        data.created_ticket === 'None' ? 
+                        'None' : 
+                        `<a href="/tickets/${data.created_ticket}/" class="text-indigo-600 hover:underline">Ticket #${data.created_ticket}</a>`
+                    }</p>
+                </div>
+                <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <p class="text-sm text-gray-700 font-semibold mb-2">Attachments:</p>
+                    ${
+                        data.attachments.length > 0 ? `
+                            <ul class="space-y-2">
+                                ${data.attachments.map(att => `
+                                    <li class="attachment-item p-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                                        <a href="${att.file_url}" target="_blank" class="text-indigo-600 hover:underline flex items-center">
+                                            <i class="fas fa-file mr-2"></i> Attachment #${att.id} (Uploaded by ${att.uploaded_by} at ${att.uploaded_at})
+                                        </a>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        ` : '<p class="text-sm text-gray-500">No attachments available.</p>'
+                    }
+                </div>
+                ${
+                    isPending ? `
+                        <div class="mt-6 flex justify-end gap-2">
+                            <button class="accept-session bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center" data-session="${data.session_id}">
+                                <i class="fas fa-check mr-2"></i> Accept
+                            </button>
+                            <button class="reject-session bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center" data-session="${data.session_id}">
+                                <i class="fas fa-times mr-2"></i> Reject
+                            </button>
+                        </div>
+                    ` : ''
+                }
+            </div>
+        `;
+    }
+
+    document.querySelectorAll('.session-item').forEach(item => {
+        item.addEventListener('click', () => {
+            // Remove active class from all items and add to clicked item
+            document.querySelectorAll('.session-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            const sessionId = item.getAttribute('data-session');
+            const detailSection = document.getElementById('session-details');
+
+            // Show loading state
+            detailSection.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="text-gray-600">Loading session details...</p>
+                </div>
+            `;
+
+            // Fetch session details
+            const sessionDetailUrl = `${sessionDetailBaseUrl}${sessionId}/`;
+            fetch(sessionDetailUrl, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderSessionDetails(data, detailSection);
+            })
+            .catch(error => {
+                console.error('Error fetching session details:', error);
+                detailSection.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-5xl mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-800">Error</h3>
+                        <p class="text-gray-600 mt-2">Failed to load session details. Please try again.</p>
+                    </div>
+                `;
+            });
+        });
+    });
+
+    // Add event delegation for dynamically added buttons
+    document.getElementById('session-details').addEventListener('click', (event) => {
+        const target = event.target.closest('.accept-session, .reject-session');
+        if (!target) return;
+
+        const sessionId = target.getAttribute('data-session');
+        const detailSection = document.getElementById('session-details');
+        const sessionItem = document.querySelector(`.session-item[data-session="${sessionId}"]`);
+
+        if (target.classList.contains('accept-session')) {
+            const acceptUrl = `${acceptSessionBaseUrl}${sessionId}/accept/`;
+            fetch(acceptUrl, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(result => {
+                if (result.success) {
+                    // Update session details
+                    renderSessionDetails(result.session, detailSection);
+                    // Update sidebar item
+                    sessionItem.setAttribute('data-status', 'accepted');
+                    sessionItem.style.background = 'linear-gradient(135deg, #fff9e6 0%, #fff0b3 100%)';
+                    const statusIcon = sessionItem.querySelector('.fa-clock, .fa-check-circle, .fa-times-circle');
+                    if (statusIcon) {
+                        statusIcon.className = 'fas fa-check-circle text-yellow-500 mr-2';
+                    }
+                    // Show notification
+                    showNotification(result.message);
+                    // Optionally redirect to ticket detail
+                    // window.location.href = result.redirect_url;
+                } else {
+                    showNotification(result.error, true);
+                }
+            })
+            .catch(error => {
+                console.error('Error accepting session:', error);
+                showNotification('Failed to accept session. Please try again.', true);
+            });
+        } else if (target.classList.contains('reject-session')) {
+            const reason = prompt('Please provide a reason for rejection:');
+            if (reason && reason.trim()) {
+                const rejectUrl = `${rejectSessionBaseUrl}${sessionId}/reject/`;
+                fetch(rejectUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ rejection_reason: reason.trim() })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        // Update session details
+                        renderSessionDetails(result.session, detailSection);
+                        // Update sidebar item
+                        sessionItem.setAttribute('data-status', 'rejected');
+                        sessionItem.style.background = 'linear-gradient(135deg, #f0f0f0 0%, #d9d9d9 100%)';
+                        sessionItem.style.animation = ''; // Remove pending animation
+                        const statusIcon = sessionItem.querySelector('.fa-clock, .fa-check-circle, .fa-times-circle');
+                        if (statusIcon) {
+                            statusIcon.className = 'fas fa-times-circle text-gray-500 mr-2';
+                        }
+                        // Show notification
+                        showNotification(result.message);
+                        // Optionally redirect to agent review queue
+                        // window.location.href = result.redirect_url;
+                    } else {
+                        showNotification(result.error, true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error rejecting session:', error);
+                    showNotification('Failed to reject session. Please try again.', true);
+                });
+            } else if (reason !== null) {
+                showNotification('Rejection reason cannot be empty.', true);
+            }
+        }
+    });
+</script>
+
+{% endblock dynamic_content %}

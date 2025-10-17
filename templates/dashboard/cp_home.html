@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal - Help Desk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Alpine.js (for dropdown behavior) -->
+    <script   script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .status-badge-pending { background: #fef3c7; color: #92400e; }
+        .status-badge-accepted { background: #d1fae5; color: #065f46; }
+        .status-badge-rejected { background: #fee2e2; color: #991b1b; }
+        .status-badge-inprogress { background: #dbeafe; color: #1e40af; }
+        .status-badge-resolved { background: #d1fae5; color: #065f46; }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 30px;
+            bottom: -30px;
+            width: 2px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+        
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    
+    <!-- Navigation Bar -->
+    <nav class="glass-effect shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo Section -->
+                <div class="flex items-center space-x-3">
+                    <div class="gradient-bg w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-headset text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-purple-600 whitespace-nowrap">
+                        Help Desk
+                    </span>
+                </div>
+
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#dashboard" class="text-gray-700 hover:text-purple-600 transition">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="#tickets" class="text-gray-700 hover:text-purple-600 transition">
+                        <i class="fas fa-ticket-alt mr-2"></i>My Tickets
+                    </a>
+                    <a href="#knowledge" class="text-gray-700 hover:text-purple-600 transition">
+                        <i class="fas fa-book mr-2"></i>Knowledge Base
+                    </a>
+                </div>
+
+                <!-- Notifications + Profile Dropdown -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notification Bell -->
+                    <button class="relative p-2 text-gray-600 hover:text-purple-600 transition">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+
+                    <!-- Profile Dropdown -->
+                    <div x-data="{ open: false }" class="relative">
+                        <!-- Profile Button -->
+                        <div @click="open = !open"
+                            class="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 rounded-lg px-3 py-2 transition">
+                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff" 
+                                alt="User" class="w-8 h-8 rounded-full">
+                            <span class="hidden md:block font-medium text-gray-700">{{request.user.username}}</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </div>
+
+                        <!-- Dropdown Menu -->
+                        <div x-show="open" 
+                            @click.outside="open = false"
+                            x-transition
+                            class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+                            <a href="#profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2 text-purple-600"></i> Profile
+                            </a>
+                            <a href="{% url 'logout-view' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2 text-red-500"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!--message section-->
+        {% include "accounts/includes/alert.html" %}
+        
+        <!-- Welcome Section -->
+        <div class="gradient-bg rounded-2xl shadow-xl p-8 mb-8 text-white animate-slide-in">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">Welcome back, {{request.user.name}} 👋</h1>
+                    <p class="text-purple-100 text-lg">How can we help you today?</p>
+                </div>
+                <button onclick="openCreateTicketModal()" class="bg-white text-purple-600 px-6 py-3 rounded-xl font-semibold hover:bg-purple-50 transition shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-plus mr-2"></i>Create New Ticket
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 hover-lift cursor-pointer">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-500 font-medium">Total</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800">12</h3>
+                <p class="text-gray-500 text-sm mt-1">All Tickets</p>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 hover-lift cursor-pointer">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-yellow-100 w-12 h-12 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-500 font-medium">Pending</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800">5</h3>
+                <p class="text-gray-500 text-sm mt-1">Awaiting Review</p>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 hover-lift cursor-pointer">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-500 font-medium">Resolved</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800">7</h3>
+                <p class="text-gray-500 text-sm mt-1">Completed</p>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 hover-lift cursor-pointer">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-purple-100 w-12 h-12 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hourglass-half text-purple-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-500 font-medium">Avg Time</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800">2.5h</h3>
+                <p class="text-gray-500 text-sm mt-1">Response Time</p>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-white rounded-xl shadow-lg mb-6 overflow-hidden">
+            <div class="flex border-b">
+                <button onclick="switchTab('active')" id="tab-active" class="tab-active px-6 py-4 flex items-center space-x-2 transition">
+                    <i class="fas fa-list"></i>
+                    <span>Active Tickets</span>
+                    <span class="bg-purple-100 text-purple-600 px-2 py-1 rounded-full text-xs font-bold ml-2">5</span>
+                </button>
+                <button onclick="switchTab('history')" id="tab-history" class="px-6 py-4 text-gray-500 hover:text-purple-600 flex items-center space-x-2 transition">
+                    <i class="fas fa-history"></i>
+                    <span>History</span>
+                </button>
+                <button onclick="switchTab('feedback')" id="tab-feedback" class="px-6 py-4 text-gray-500 hover:text-purple-600 flex items-center space-x-2 transition">
+                    <i class="fas fa-star"></i>
+                    <span>Feedback</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Active Tickets Content -->
+        <div id="content-active" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Tickets List -->
+                <div class="lg:col-span-2 space-y-4">
+                    
+                    <!-- Ticket Card 1 -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover-lift cursor-pointer" onclick="openTicketDetail('TKT1001')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="bg-red-100 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800 mb-1">Login Issues - Cannot Access Account</h3>
+                                    <p class="text-gray-500 text-sm">Unable to login to my account for the past 2 hours...</p>
+                                    <div class="flex items-center space-x-4 mt-3">
+                                        <span class="text-xs text-gray-400">
+                                            <i class="far fa-clock mr-1"></i>2 hours ago
+                                        </span>
+                                        <span class="text-xs text-gray-400">
+                                            <i class="fas fa-tag mr-1"></i>Authentication
+                                        </span>
+                                        <span class="text-xs text-gray-400">
+                                            <i class="fas fa-paperclip mr-1"></i>2 attachments
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <span class="status-badge-pending px-3 py-1 rounded-full text-xs font-semibold">
+                                    PENDING
+                                </span>
+                                <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">
+                                    HIGH
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <div class="flex items-center space-x-2">
+                                <img src="https://ui-avatars.com/api/?name=Support+Agent&background=667eea&color=fff" 
+                                     alt="Agent" class="w-6 h-6 rounded-full">
+                                <span class="text-sm text-gray-600">Awaiting assignment</span>
+                            </div>
+                            <span class="text-xs text-gray-400">TKT1001</span>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Card 2 -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover-lift cursor-pointer" onclick="openTicketDetail('TKT1002')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-sync-alt text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800 mb-1">Payment Processing Delay</h3>
+                                    <p class="text-gray-500 text-sm">My payment has been processing for 3 days now...</p>
+                                    <div class="flex items-center space-x-4 mt-3">
+                                        <span class="text-xs text-gray-400">
+                                            <i class="far fa-clock mr-1"></i>1 day ago
+                                        </span>
+                                        <span class="text-xs text-gray-400">
+                                            <i class="fas fa-tag mr-1"></i>Billing
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <span class="status-badge-inprogress px-3 py-1 rounded-full text-xs font-semibold">
+                                    IN PROGRESS
+                                </span>
+                                <span class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs font-bold">
+                                    MEDIUM
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <div class="flex items-center space-x-2">
+                                <img src="https://ui-avatars.com/api/?name=Sarah+Jones&background=10b981&color=fff" 
+                                     alt="Agent" class="w-6 h-6 rounded-full">
+                                <span class="text-sm text-gray-600">Assigned to Sarah Jones</span>
+                            </div>
+                            <span class="text-xs text-gray-400">TKT1002</span>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Card 3 -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 hover-lift cursor-pointer" onclick="openTicketDetail('TKT1003')">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-question-circle text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800 mb-1">How to Export Reports?</h3>
+                                    <p class="text-gray-500 text-sm">Need help understanding the export feature...</p>
+                                    <div class="flex items-center space-x-4 mt-3">
+                                        <span class="text-xs text-gray-400">
+                                            <i class="far fa-clock mr-1"></i>3 hours ago
+                                        </span>
+                                        <span class="text-xs text-gray-400">
+                                            <i class="fas fa-tag mr-1"></i>General Inquiry
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <span class="status-badge-accepted px-3 py-1 rounded-full text-xs font-semibold">
+                                    ACCEPTED
+                                </span>
+                                <span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-bold">
+                                    LOW
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <div class="flex items-center space-x-2">
+                                <img src="https://ui-avatars.com/api/?name=Mike+Chen&background=f59e0b&color=fff" 
+                                     alt="Agent" class="w-6 h-6 rounded-full">
+                                <span class="text-sm text-gray-600">Assigned to Mike Chen</span>
+                            </div>
+                            <span class="text-xs text-gray-400">TKT1003</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Quick Actions Sidebar -->
+                <div class="space-y-6">
+                    
+                    <!-- Quick Tips -->
+                    <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl shadow-lg p-6 border border-purple-100">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i class="fas fa-lightbulb text-yellow-500 text-xl"></i>
+                            <h3 class="font-bold text-gray-800">Quick Tips</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-600">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>Add screenshots for faster resolution</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>Check knowledge base first</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>Be specific about your issue</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Support Hours -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i class="fas fa-clock text-blue-500 text-xl"></i>
+                            <h3 class="font-bold text-gray-800">Support Hours</h3>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Monday - Friday</span>
+                                <span class="font-semibold text-gray-800">9am - 6pm</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Saturday</span>
+                                <span class="font-semibold text-gray-800">10am - 4pm</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Sunday</span>
+                                <span class="font-semibold text-gray-800">Closed</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span class="text-sm text-green-600 font-medium">Currently Online</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Average Response Time -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i class="fas fa-chart-line text-purple-500 text-xl"></i>
+                            <h3 class="font-bold text-gray-800">Avg Response</h3>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-purple-600 mb-2">2.5h</div>
+                            <p class="text-sm text-gray-500">Based on last 30 days</p>
+                            <div class="mt-4 w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">85% faster than average</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- History Content (Hidden) -->
+        <div id="content-history" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-6">Ticket History</h3>
+                <div class="space-y-4">
+                    
+                    <div class="border-l-4 border-green-500 pl-4 py-3 bg-green-50 rounded-r-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Email Configuration Help</h4>
+                                <p class="text-sm text-gray-600 mt-1">Resolved on Oct 10, 2025</p>
+                            </div>
+                            <span class="status-badge-resolved px-3 py-1 rounded-full text-xs font-semibold">
+                                RESOLVED
+                            </span>
+                        </div>
+                        <div class="mt-3 flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-clock mr-1"></i>Resolution time: 1.5h</span>
+                            <span><i class="fas fa-user mr-1"></i>Agent: John Smith</span>
+                            <span><i class="fas fa-star text-yellow-400 mr-1"></i>Rated: 5/5</span>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-green-500 pl-4 py-3 bg-green-50 rounded-r-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Password Reset Request</h4>
+                                <p class="text-sm text-gray-600 mt-1">Resolved on Oct 8, 2025</p>
+                            </div>
+                            <span class="status-badge-resolved px-3 py-1 rounded-full text-xs font-semibold">
+                                RESOLVED
+                            </span>
+                        </div>
+                        <div class="mt-3 flex items-center space-x-4 text-xs text-gray-500">
+                            <span><i class="fas fa-clock mr-1"></i>Resolution time: 0.5h</span>
+                            <span><i class="fas fa-user mr-1"></i>Agent: Sarah Jones</span>
+                            <span><i class="fas fa-star text-yellow-400 mr-1"></i>Rated: 4/5</span>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-red-500 pl-4 py-3 bg-red-50 rounded-r-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Refund Request</h4>
+                                <p class="text-sm text-gray-600 mt-1">Rejected on Oct 5, 2025</p>
+                            </div>
+                            <span class="status-badge-rejected px-3 py-1 rounded-full text-xs font-semibold">
+                                REJECTED
+                            </span>
+                        </div>
+                        <div class="mt-3 text-xs text-gray-600">
+                            <strong>Reason:</strong> Request does not meet refund policy criteria. Please refer to terms of service.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Content (Hidden) -->
+        <div id="content-feedback" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold mb-6">Provide Feedback</h3>
+                <p class="text-gray-600 mb-6">Help us improve our support service by providing your feedback.</p>
+                
+                <form class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Rate Your Experience</label>
+                        <div class="flex space-x-2">
+                            <button type="button" onclick="setRating(1)" class="rating-btn w-12 h-12 rounded-lg border-2 border-gray-300 hover:border-yellow-400 hover:bg-yellow-50 transition">
+                                <i class="fas fa-star text-gray-400"></i>
+                            </button>
+                            <button type="button" onclick="setRating(2)" class="rating-btn w-12 h-12 rounded-lg border-2 border-gray-300 hover:border-yellow-400 hover:bg-yellow-50 transition">
+                                <i class="fas fa-star text-gray-400"></i>
+                            </button>
+                            <button type="button" onclick="setRating(3)" class="rating-btn w-12 h-12 rounded-lg border-2 border-gray-300 hover:border-yellow-400 hover:bg-yellow-50 transition">
+                                <i class="fas fa-star text-gray-400"></i>
+                            </button>
+                            <button type="button" onclick="setRating(4)" class="rating-btn w-12 h-12 rounded-lg border-2 border-gray-300 hover:border-yellow-400 hover:bg-yellow-50 transition">
+                                <i class="fas fa-star text-gray-400"></i>
+                            </button>
+                            <button type="button" onclick="setRating(5)" class="rating-btn w-12 h-12 rounded-lg border-2 border-gray-300 hover:border-yellow-400 hover:bg-yellow-50 transition">
+                                <i class="fas fa-star text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Your Feedback</label>
+                        <textarea rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Tell us about your experience..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="gradient-bg text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition w-full">
+                        Submit Feedback
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Create Ticket Modal -->
+    <div id="createTicketModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-in">
+            <div class="gradient-bg p-6 text-white flex justify-between items-center">
+                <h2 class="text-2xl font-bold">Create New Ticket</h2>
+                <button onclick="closeCreateTicketModal()" class="text-white hover:bg-white hover:bg-opacity-20 w-8 h-8 rounded-lg transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            {% comment %} <form class="p-6 space-y-6" onsubmit="submitTicket(event)"> {% endcomment %}
+            <form class="p-6 space-y-6" method="POST" action="{% url 'taskbird:create-session-view' %}" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Title <span class="text-red-500">*</span></label>
+                    <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" name="title" placeholder="Brief description of your issue">
+                </div>
+                
+                {% comment %} <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option>Select a category</option>
+                        <option>Technical Support</option>
+                        <option>Billing</option>
+                        <option>Account Management</option>
+                        <option>General Inquiry</option>
+                    </select>
+                </div> {% endcomment %}
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description <span class="text-red-500">*</span></label>
+                    <textarea required rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" name="description" placeholder="Please provide detailed information about your issue..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Attachments</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                        <p class="text-xs text-gray-400 mt-1">PNG, JPG, PDF up to 10MB</p>
+                        <input type="file" name="file" multiple class="hidden" id="fileUpload">
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 gradient-bg text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Ticket
+                    </button>
+                    <button type="button" onclick="closeCreateTicketModal()" class="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-slide-in">
+            <div class="gradient-bg p-6 text-white flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold">Ticket Details</h2>
+                    <p class="text-purple-100 text-sm mt-1">Track your ticket status and updates</p>
+                </div>
+                <button onclick="closeTicketDetail()" class="text-white hover:bg-white hover:bg-opacity-20 w-8 h-8 rounded-lg transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Ticket Header -->
+                <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Login Issues - Cannot Access Account</h3>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span><i class="fas fa-hashtag mr-1"></i>TKT1001</span>
+                                <span><i class="fas fa-calendar mr-1"></i>Oct 16, 2025 10:30 AM</span>
+                                <span><i class="fas fa-tag mr-1"></i>Authentication</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end space-y-2">
+                            <span class="status-badge-pending px-4 py-2 rounded-full text-sm font-semibold">
+                                PENDING REVIEW
+                            </span>
+                            <span class="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold">
+                                HIGH PRIORITY
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Assigned Agent</p>
+                            <p class="font-semibold text-gray-800">Awaiting Assignment</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Estimated Resolution</p>
+                            <p class="font-semibold text-gray-800">2-4 hours</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Last Updated</p>
+                            <p class="font-semibold text-gray-800">2 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold text-gray-700">Progress</span>
+                        <span class="text-sm text-gray-500">25% Complete</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full transition-all duration-500" style="width: 25%"></div>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">Activity Timeline</h4>
+                    <div class="space-y-4">
+                        
+                        <div class="timeline-item relative pl-8">
+                            <div class="absolute left-0 top-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h5 class="font-semibold text-gray-800">Ticket Created</h5>
+                                    <span class="text-xs text-gray-500">2 hours ago</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Your ticket request has been submitted successfully and is awaiting review by our support team.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item relative pl-8">
+                            <div class="absolute left-0 top-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-white text-xs"></i>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h5 class="font-semibold text-gray-800">Automated Analysis</h5>
+                                    <span class="text-xs text-gray-500">2 hours ago</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Priority set to <strong>HIGH</strong> based on keyword analysis. Estimated resolution time: 2-4 hours.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item relative pl-8">
+                            <div class="absolute left-0 top-0 w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse">
+                                <i class="fas fa-clock text-white text-xs"></i>
+                            </div>
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h5 class="font-semibold text-gray-800">Awaiting Review</h5>
+                                    <span class="text-xs text-gray-500">Current Status</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Your ticket is in the review queue. An agent will review your request shortly.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-3">Description</h4>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-gray-700">Unable to login to my account for the past 2 hours. I'm receiving an error message "Invalid credentials" even though I'm sure my password is correct. I've tried resetting my password but haven't received the reset email. This is urgent as I need to access important documents.</p>
+                    </div>
+                </div>
+
+                <!-- Attachments -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-3">Attachments</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-red-100 w-10 h-10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file-image text-red-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 text-sm">error-screenshot.png</p>
+                                    <p class="text-xs text-gray-500">256 KB</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file-pdf text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 text-sm">account-details.pdf</p>
+                                    <p class="text-xs text-gray-500">128 KB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div>
+                    <h4 class="text-lg font-bold text-gray-800 mb-3">Comments & Updates</h4>
+                    <div class="space-y-4 mb-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-start space-x-3">
+                                <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff" alt="User" class="w-10 h-10 rounded-full">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="font-semibold text-gray-800">You</span>
+                                        <span class="text-xs text-gray-500">2 hours ago</span>
+                                    </div>
+                                    <p class="text-gray-700 text-sm">I've attached screenshots of the error message. Please help me resolve this as soon as possible.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=667eea&color=fff" alt="User" class="w-10 h-10 rounded-full">
+                        <div class="flex-1">
+                            <textarea rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Add a comment..."></textarea>
+                            <button class="mt-2 gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition">
+                                <i class="fas fa-comment mr-2"></i>Post Comment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('text-gray-500', 'hover:text-purple-600');
+            });
+            
+            // Show selected content and activate tab
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+            const activeTab = document.getElementById('tab-' + tabName);
+            activeTab.classList.add('tab-active');
+            activeTab.classList.remove('text-gray-500', 'hover:text-purple-600');
+        }
+
+        // Modal Functions
+        function openCreateTicketModal() {
+            document.getElementById('createTicketModal').classList.remove('hidden');
+            document.getElementById('createTicketModal').classList.add('flex');
+        }
+
+        function closeCreateTicketModal() {
+            document.getElementById('createTicketModal').classList.add('hidden');
+            document.getElementById('createTicketModal').classList.remove('flex');
+        }
+
+        function openTicketDetail(ticketId) {
+            document.getElementById('ticketDetailModal').classList.remove('hidden');
+            document.getElementById('ticketDetailModal').classList.add('flex');
+            // In real implementation, load ticket details via AJAX
+        }
+
+        function closeTicketDetail() {
+            document.getElementById('ticketDetailModal').classList.add('hidden');
+            document.getElementById('ticketDetailModal').classList.remove('flex');
+        }
+
+        // Submit Ticket
+        {% comment %} function submitTicket(event) {
+            event.preventDefault();
+            // Show success message
+            alert('Ticket submitted successfully! You will be notified once it is reviewed.');
+            closeCreateTicketModal();
+            // In real implementation, submit via AJAX to Django backend
+        } {% endcomment %}
+
+        // Rating System
+        let selectedRating = 0;
+        function setRating(rating) {
+            selectedRating = rating;
+            const buttons = document.querySelectorAll('.rating-btn');
+            buttons.forEach((btn, index) => {
+                const star = btn.querySelector('i');
+                if (index < rating) {
+                    star.classList.remove('text-gray-400');
+                    star.classList.add('text-yellow-400');
+                    btn.classList.add('border-yellow-400', 'bg-yellow-50');
+                    btn.classList.remove('border-gray-300');
+                } else {
+                    star.classList.add('text-gray-400');
+                    star.classList.remove('text-yellow-400');
+                    btn.classList.remove('border-yellow-400', 'bg-yellow-50');
+                    btn.classList.add('border-gray-300');
+                }
+            });
+        }
+
+        // Close modals on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeCreateTicketModal();
+                closeTicketDetail();
+            }
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('createTicketModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeCreateTicketModal();
+            }
+        });
+
+        document.getElementById('ticketDetailModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeTicketDetail();
+            }
+        });
+
+        // File upload handling
+        document.querySelector('.border-dashed').addEventListener('click', function() {
+            document.getElementById('fileUpload').click();
+        });
+
+        document.getElementById('fileUpload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                let fileNames = Array.from(files).map(f => f.name).join(', ');
+                alert('Files selected: ' + fileNames);
+            }
+        });
+
+        // Notification badge animation
+        setInterval(() => {
+            const badge = document.querySelector('.fa-bell + .absolute');
+            if (badge) {
+                badge.classList.toggle('animate-pulse');
+            }
+        }, 2000);
+
+        // Auto-refresh ticket status (simulation)
+        let ticketProgress = 25;
+        setInterval(() => {
+            if (ticketProgress < 100) {
+                ticketProgress += 5;
+                const progressBar = document.querySelector('.bg-gradient-to-r');
+                if (progressBar) {
+                    progressBar.style.width = ticketProgress + '%';
+                }
+            }
+        }, 10000);
+    </script>
+
+</body>
+</html>

@@ -18,4 +18,4 @@ def customer_dashboard(request):
     context = {}
     context['user'] = request.user
 
-    return render(request, 'dashboard/customer.html', context)
+    return render(request, 'dashboard/cp_home.html', context)

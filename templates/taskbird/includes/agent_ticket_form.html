@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
 
-<form method="POST" action="{% url 'create-ticket-agent' %}" id="ticket-form" class="space-y-4 p-3">
+<form method="POST" action="{% url 'taskbird:create-ticket-agent' %}" id="ticket-form" class="space-y-4 p-3">
     {% csrf_token %}
     
     <div>
