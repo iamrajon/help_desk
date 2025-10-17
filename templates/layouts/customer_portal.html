@@ -1,0 +1,57 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Customer Portal | Dashboard {% endblock title %}
+
+{% block style %}
+{{ block.super }}
+{% endblock style %}
+
+
+{% block content %}
+
+{% block cp_content %}
+
+{% endblock cp_content %}
+
+{% endblock content %}
+
+<!--js script-->
+{% block script %}
+{{ block.super }}
+{% endblock script %}
+
+
+
+
+
+
+{% comment %} {% load static tailwind_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock title %}</title>
+    <script src="https://cdn.tailwindcss.com"></s>
+    {% tailwind_css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    {% block style %}
+    {% endblock style %}    
+
+</head>
+<body>
+
+    <div class="bg-gray-100 min-h-screen">
+        {% block cp_content %}
+        <!--expend the block and use in your worn way-->
+        {% endblock cp_content %}
+    </div>
+
+    <!--js for customer portal-->
+    <script src="{% static 'js/cp_script.js' %}"></script>
+</body>
+</html>  {% endcomment %}

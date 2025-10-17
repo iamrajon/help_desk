@@ -50,7 +50,7 @@ def login_view(request):
                 #     return render(request, 'accounts/login.html', {'form': form})
                 
                 login(request, user)
-                # messages.success(request, f'Welcome back, {user.name}!')
+                messages.success(request, f'Welcome back, {user.name}!')
                 return redirect(get_user_dashboard_url(user))
             else:
                 context['form'] = form

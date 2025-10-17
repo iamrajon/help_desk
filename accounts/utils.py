@@ -53,7 +53,7 @@ def get_user_dashboard_url(user):
     if user.is_customer:
         return 'customer-dashboard'
     elif user.is_agent:
-        return 'agent-dashboard'
+        return 'taskbird:agent-dashboard'
     elif user.is_superuser_type:
         return 'admin_dashboard'
     return 'login-view'
